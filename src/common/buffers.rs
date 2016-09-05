@@ -49,6 +49,13 @@ impl<T: Num + Copy> ShiftRegister<T> {
     }
 
     /// Returns the length of the shift registers.
+    ///
+    /// # Examples
+    /// ```
+    /// # use dsp::common::buffers::ShiftRegister;
+    /// let sr = ShiftRegister::<i32>::new(10);
+    /// assert_eq!(10, sr.len())
+    /// ```
     pub fn len(&self) -> usize {
         self.qs.len()
     }
