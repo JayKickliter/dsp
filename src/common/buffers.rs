@@ -1,32 +1,32 @@
 use num::Num;
 
 /// A non-resizable (after creation) buffer.
-pub struct ShiftRegister<T: Num + Copy> {
+pub struct ShiftBuf<T: Num + Copy> {
     qs: Box<[T]>,
 }
 
 
-impl<T: Num + Copy> ShiftRegister<T> {
+impl<T: Num + Copy> ShiftBuf<T> {
     /// Create a new shift register.
     ///
     /// # Examples
     /// ```
-    /// # use dsp::common::buffers::ShiftRegister;
-    /// let sr: ShiftRegister<f32> = ShiftRegister::new(10);
+    /// # use dsp::common::buffers::ShiftBuf;
+    /// let buf: ShiftBuf<f32> = ShiftBuf::new(10);
     /// ```
     pub fn new(n: usize) -> Self {
         let mut qs = Vec::new();
         for _ in 0..n {
             qs.push(T::zero());
         }
-        ShiftRegister { qs: qs.into_boxed_slice() }
+        ShiftBuf { qs: qs.into_boxed_slice() }
     }
 
     /// Shift new simples into the register.
     ///
     /// ```
-    /// # use dsp::common::buffers::ShiftRegister;
-    /// let sr: ShiftRegister<f32> = ShiftRegister::new(10);
+    /// # use dsp::common::buffers::ShiftBuf;
+    /// let buf: ShiftBuf<f32> = ShiftBuf::new(10);
     /// ```
     pub fn push(&mut self, xs: &[T]) {
         if xs.len() >= self.len() {
@@ -52,9 +52,9 @@ impl<T: Num + Copy> ShiftRegister<T> {
     ///
     /// # Examples
     /// ```
-    /// # use dsp::common::buffers::ShiftRegister;
-    /// let sr = ShiftRegister::<i32>::new(10);
-    /// assert_eq!(10, sr.len())
+    /// # use dsp::common::buffers::ShiftBuf;
+    /// let buf = ShiftBuf::<i32>::new(10);
+    /// assert_eq!(10, buf.len())
     /// ```
     pub fn len(&self) -> usize {
         self.qs.len()
@@ -62,7 +62,7 @@ impl<T: Num + Copy> ShiftRegister<T> {
 
 }
 
-impl<T: Num + Copy> AsRef<[T]> for ShiftRegister<T> {
+impl<T: Num + Copy> AsRef<[T]> for ShiftBuf<T> {
     fn as_ref(&self) -> &[T] {
         self.qs.as_ref()
     }
@@ -70,13 +70,13 @@ impl<T: Num + Copy> AsRef<[T]> for ShiftRegister<T> {
 
 #[cfg(test)]
 mod test {
-    use ::common::buffers::ShiftRegister;
+    use ::common::buffers::ShiftBuf;
 
     #[test]
     fn test_shift_register_multipart() {
-        let mut sr = ShiftRegister::<i32>::new(5);
-        sr.push([0,1,2,3,4].as_ref());
-        sr.push([5].as_ref());
-        assert_eq!(sr.as_ref(),[1,2,3,4,5].as_ref())
+        let mut buf = ShiftBuf::<i32>::new(5);
+        buf.push([0,1,2,3,4].as_ref());
+        buf.push([5].as_ref());
+        assert_eq!(buf.as_ref(),[1,2,3,4,5].as_ref())
     }
 }
