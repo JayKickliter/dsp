@@ -2,7 +2,7 @@ use num::Num;
 
 /// A non-resizable (after creation) buffer.
 pub struct ShiftRegister<T: Num + Copy> {
-    qs: Vec<T>,
+    qs: Box<[T]>,
 }
 
 
@@ -19,7 +19,7 @@ impl<T: Num + Copy> ShiftRegister<T> {
         for _ in 0..n {
             qs.push(T::zero());
         }
-        ShiftRegister { qs: qs }
+        ShiftRegister { qs: qs.into_boxed_slice() }
     }
 
     /// Shift new simples into the register.
@@ -36,12 +36,40 @@ impl<T: Num + Copy> ShiftRegister<T> {
                 self.qs[i] = new_qs[i];
             }
         } else {
-
+            for i in 0..(self.len()-xs.len()) {
+                self.qs[i] = self.qs[i+xs.len()];
+            }
+            let pivot = self.len()-xs.len();
+            let mut xidx = 0;
+            for i in pivot..self.len() {
+                self.qs[i] = xs[xidx];
+                xidx += 1;
+            }
         }
     }
 
     /// Returns the length of the shift registers.
     pub fn len(&self) -> usize {
         self.qs.len()
+    }
+
+}
+
+impl<T: Num + Copy> AsRef<[T]> for ShiftRegister<T> {
+    fn as_ref(&self) -> &[T] {
+        self.qs.as_ref()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use ::common::buffers::ShiftRegister;
+
+    #[test]
+    fn test_shift_register_multipart() {
+        let mut sr = ShiftRegister::<i32>::new(5);
+        sr.push([0,1,2,3,4].as_ref());
+        sr.push([5].as_ref());
+        assert_eq!(sr.as_ref(),[1,2,3,4,5].as_ref())
     }
 }
