@@ -1,10 +1,10 @@
 use num::Num;
+use std::ops::Index;
 
 /// A non-resizable (after creation) buffer.
 pub struct ShiftBuf<T: Num + Copy> {
     qs: Box<[T]>,
 }
-
 
 impl<T: Num + Copy> ShiftBuf<T> {
     /// Create a new shift register.
@@ -22,7 +22,7 @@ impl<T: Num + Copy> ShiftBuf<T> {
         ShiftBuf { qs: qs.into_boxed_slice() }
     }
 
-    /// Shift new simples into the register.
+    /// Shift new samples into the register.
     ///
     /// ```
     /// # use dsp::common::buffers::ShiftBuf;
@@ -36,10 +36,10 @@ impl<T: Num + Copy> ShiftBuf<T> {
                 self.qs[i] = new_qs[i];
             }
         } else {
-            for i in 0..(self.len()-xs.len()) {
-                self.qs[i] = self.qs[i+xs.len()];
+            for i in 0..(self.len() - xs.len()) {
+                self.qs[i] = self.qs[i + xs.len()];
             }
-            let pivot = self.len()-xs.len();
+            let pivot = self.len() - xs.len();
             let mut xidx = 0;
             for i in pivot..self.len() {
                 self.qs[i] = xs[xidx];
@@ -59,7 +59,6 @@ impl<T: Num + Copy> ShiftBuf<T> {
     pub fn len(&self) -> usize {
         self.qs.len()
     }
-
 }
 
 impl<T: Num + Copy> AsRef<[T]> for ShiftBuf<T> {
@@ -68,15 +67,40 @@ impl<T: Num + Copy> AsRef<[T]> for ShiftBuf<T> {
     }
 }
 
+impl<T: Num + Copy> Index<usize> for ShiftBuf<T> {
+    type Output = T;
+    fn index(&self, _index: usize) -> &T {
+        &self.qs[_index]
+    }
+}
+
 #[cfg(test)]
 mod test {
     use ::common::buffers::ShiftBuf;
 
     #[test]
-    fn test_shift_register_multipart() {
+    fn test_shiftbuf_multipart() {
         let mut buf = ShiftBuf::<i32>::new(5);
-        buf.push([0,1,2,3,4].as_ref());
+        buf.push([0, 1, 2, 3, 4].as_ref());
         buf.push([5].as_ref());
-        assert_eq!(buf.as_ref(),[1,2,3,4,5].as_ref())
+        assert_eq!(buf.as_ref(), [1, 2, 3, 4, 5].as_ref())
+    }
+
+    #[test]
+    fn test_shiftbuf_index() {
+        let mut buf = ShiftBuf::<i32>::new(5);
+        let elems = [0, 1, 2, 3, 4];
+        buf.push(&elems);
+        for i in 0..buf.len() {
+            assert_eq!(buf[i], elems[i]);
+        }
+    }
+
+    #[test]
+    fn test_shiftbuf_len() {
+        let mut buf = ShiftBuf::<i32>::new(5);
+        let elems = [0, 1, 2, 3, 4];
+        buf.push(&elems);
+        assert_eq!(elems.len(), buf.len());
     }
 }
