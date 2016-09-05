@@ -1,0 +1,17 @@
+# This informs travis to use a docker container
+sudo: false
+
+# Since we're using a container, we can cache specified directories
+# Specifally, let's cache rust related stuff since it's slow to rebuild
+cache:
+  directories:
+  - $HOME/.cargo
+
+rust:
+  - stable
+  - beta
+  - nightly
+
+matrix:
+  allow_failures:
+    - rust: nightly
